@@ -160,9 +160,9 @@ footer a:hover{color:var(--accent)}
   <a class="nav-logo" href="#">&lt; abaah17 /&gt;</a>
   <div class="nav-right">
     <ul class="nav-links">
-      <li><a href="/datacenter">Data Center</a></li>
       <li><a href="#pinned">Pinned</a></li>
-      <li><a href="#repos">Repos</a></li>      
+      <li><a href="#repos">Repos</a></li>
+      <li><a href="/datacenter">Data Center</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">&#127769;</button>
@@ -268,5 +268,7 @@ document.getElementById('searchInput').addEventListener('input',renderRepos);doc
 async function handleSubmit(){const name=document.getElementById('formName').value.trim();const email=document.getElementById('formEmail').value.trim();const msg=document.getElementById('formMsg').value.trim();if(!name||!email||!msg){alert('Please fill in all fields.');return}const btn=document.querySelector('.submit-btn');btn.textContent='Sending\u2026';btn.disabled=true;btn.style.opacity='0.7';try{const res=await fetch('https://formspree.io/f/xgoqpqew',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name,email,message:msg})});if(res.ok){document.getElementById('contactForm').style.display='none';document.getElementById('formSuccess').style.display='block'}else{const data=await res.json();alert('Something went wrong: '+(data?.error||'Please try again.'));btn.textContent='Send message \u2192';btn.disabled=false;btn.style.opacity='1'}}catch(e){alert('Network error. Please check your connection and try again.');btn.textContent='Send message \u2192';btn.disabled=false;btn.style.opacity='1'}}
 (async()=>{try{allRepos=await fetchAllRepos();renderStats(allRepos);renderPinned(allRepos);renderSkills(allRepos);renderLangFilters(allRepos);renderRepos()}catch(e){document.getElementById('reposGrid').innerHTML=`<div class="empty-msg">// error: ${e.message}</div>`}})();
 </script>
+<script data-goatcounter="https://abaah17.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
