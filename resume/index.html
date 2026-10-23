@@ -1,74 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resume | Anthony Baah</title>
-  <meta name="description" content="Resume of Anthony Baah — Data Center Technician, AZ-500 certified, focused on cloud security and security operations.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #f7f8fa;
-      --surface: #ffffff;
-      --text: #1a1d23;
-      --muted: #5b6270;
-      --border: #e2e5ea;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
+    @media (max-width: 640px) {
+      h1 { font-size: 1.6rem; }
+      .viewer { gap: .75rem; }
     }
-    [data-theme="dark"] {
-      --bg: #0f1115;
-      --surface: #171a21;
-      --text: #e6e8ec;
-      --muted: #9aa1ad;
-      --border: #2a2f39;
-      --accent: #60a5fa;
-      --accent-hover: #93c5fd;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      transition: background .2s, color .2s;
-    }
-    header {
-      display: flex; justify-content: space-between; align-items: center;
-      max-width: 1000px; margin: 0 auto; padding: 1.25rem 1rem;
-    }
-    header a.home { color: var(--text); text-decoration: none; font-weight: 600; }
-    header a.home:hover { color: var(--accent); }
-    #theme-toggle {
-      background: var(--surface); color: var(--text);
-      border: 1px solid var(--border); border-radius: 8px;
-      padding: .4rem .7rem; cursor: pointer; font-size: 1rem;
-    }
-    main { max-width: 1000px; margin: 0 auto; padding: 0 1rem 3rem; }
-    .intro {
-      display: flex; flex-wrap: wrap; gap: 1rem;
-      justify-content: space-between; align-items: flex-end;
-      margin-bottom: 1.25rem;
-    }
-    h1 { font-size: 2rem; line-height: 1.2; }
-    .intro p { color: var(--muted); }
-    .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
-    .btn {
-      display: inline-block; padding: .6rem 1.1rem; border-radius: 8px;
-      text-decoration: none; font-weight: 600; font-size: .95rem;
-      border: 1px solid var(--accent);
-    }
-    .btn-outline { color: var(--accent); }
-    .btn-outline:hover { background: var(--surface); }
-    .viewer { display: flex; flex-direction: column; gap: 1.25rem; align-items: center; }
-    .viewer canvas {
-      display: block; width: 100%; max-width: 850px; height: auto;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.08);
-    }
-    .status { padding: 3rem 1rem; text-align: center; color: var(--muted); }
-    .status a { color: var(--accent); }
-    .updated { margin-top: 1rem; font-size: .85rem; color: var(--muted); text-align: center; }
+  </style>
+  <script>
+    // Apply saved theme before paint to avoid a flash
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('ptTheme'); } catch (e) {}
+      if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <a class="home" href="/">← abaah17</a>
+    <button id="theme-toggle" aria-label="Toggle dark mode">🌓</button>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <h1>Resume</h1>
+        <p>Data Center Technician · AZ-500 · Cloud Security &amp; SecOps</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-outline" href="resume.pdf" download="Anthony_Baah_Resume.pdf">Download PDF</a>
+      </div>
+    </section>
+
+    <div class="viewer" id="viewer" aria-label="Anthony Baah resume">
+      <p class="status" id="status">Loading resume…</p>
+    </div>
+    <p class="updated">Last updated: October 2026</p>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    (function () {
+      var PDF_URL = 'resume.pdf';
+      var viewer = document.getElementById('viewer');
+      var status = document.getElementById('status');
+      var pdfDoc = null;
+      var lastWidth = 0;
+
+      function fail() {
+        status.innerHTML = 'Couldn\u2019t load the resume. <a href="' + PDF_URL + '">Open it directly</a>.';
+      }
+
+      if (!window.pdfjsLib) { fail(); return; }
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+      function render() {
+        var width = Math.min(viewer.clientWidth, 850);
+        if (!pdfDoc || width === lastWidth) return;
+        lastWidth = width;
+        var dpr = window.devicePixelRatio || 1;
+        var tasks = [];
+        for (var i = 1; i <= pdfDoc.numPages; i++) tasks.push(pdfDoc.getPage(i));
+        Promise.all(tasks).then(function (pages) {
+          viewer.innerHTML = '';
+          pages.forEach(function (page) {
+            var base = page.getViewport({ scale: 1 });
+            var vp = page.getViewport({ scale: (width / base.width) * dpr });
+            var canvas = document.createElement('canvas');
+            canvas.width = vp.width;
+            canvas.height = vp.height;
+            canvas.setAttribute('role', 'img');
+            canvas.setAttribute('aria-label', 'Resume page ' + page.pageNumber);
+            viewer.appendChild(canvas);
+            page.render({ canvasContext: canvas.getContext('2d'), viewport: vp });
+          });
+        });
+      }
+
+      pdfjsLib.getDocument(PDF_URL).promise.then(function (doc) {
+        pdfDoc = doc;
+        render();
+      }).catch(fail);
+
+      var t;
+      window.addEventListener('resize', function () {
+        clearTimeout(t);
+        t = setTimeout(render, 200);
+      });
+    })();
+  </script>
+  <script>
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('ptTheme', next); } catch (e) {}
+    });
+  </script>
+</body>
+</html>
